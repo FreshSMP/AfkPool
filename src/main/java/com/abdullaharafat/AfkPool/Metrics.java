@@ -12,6 +12,7 @@
  *
  * Violations will result in a ban of your plugin and account from bStats.
  */
+
 package com.abdullaharafat.AfkPool;
 
 import java.io.BufferedReader;
@@ -41,6 +42,8 @@ import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPOutputStream;
 import javax.net.ssl.HttpsURLConnection;
+
+import com.tcoded.folialib.impl.PlatformScheduler;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
@@ -50,6 +53,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 public class Metrics {
 
   private final Plugin plugin;
+  
+  private final PlatformScheduler scheduler;
 
   private final MetricsBase metricsBase;
 
@@ -62,6 +67,7 @@ public class Metrics {
    */
   public Metrics(JavaPlugin plugin, int serviceId) {
     this.plugin = plugin;
+    this.scheduler = App.scheduler();
     // Get the config file
     File bStatsFolder = new File(plugin.getDataFolder().getParentFile(), "bStats");
     File configFile = new File(bStatsFolder, "config.yml");
@@ -101,7 +107,7 @@ public class Metrics {
             enabled,
             this::appendPlatformData,
             this::appendServiceData,
-            submitDataTask -> Bukkit.getScheduler().runTask(plugin, submitDataTask),
+            submitDataTask -> scheduler.runNextTick(task -> submitDataTask.run()),
             plugin::isEnabled,
             (message, error) -> this.plugin.getLogger().log(Level.WARNING, message, error),
             (message) -> this.plugin.getLogger().log(Level.INFO, message),
@@ -158,7 +164,7 @@ public class Metrics {
   public static class MetricsBase {
 
     /** The version of the Metrics class. */
-    public static final String METRICS_VERSION = "3.0.2";
+    public static final String METRICS_VERSION = "3.1.0";
 
     private static final String REPORT_URL = "https://bStats.org/api/v2/data/%s";
 

@@ -5,6 +5,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import com.tcoded.folialib.FoliaLib;
+import com.tcoded.folialib.impl.PlatformScheduler;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -26,6 +28,8 @@ import net.md_5.bungee.api.ChatColor;
 
 public class App extends JavaPlugin implements Listener {
 
+    private static PlatformScheduler scheduler;
+
     private Map<String, CommandConfig> commands;
     private Map<String, Set<Player>> playersInRegions;
 
@@ -39,6 +43,9 @@ public class App extends JavaPlugin implements Listener {
 
     @Override
     public void onEnable() {
+        FoliaLib foliaLib = new FoliaLib(this);
+        scheduler = foliaLib.getScheduler();
+
         getLogger().info("AfkPool Version 2.1.0 enabled.");
         getServer().getPluginManager().registerEvents(this, this);
         saveDefaultConfig();
@@ -61,7 +68,7 @@ public class App extends JavaPlugin implements Listener {
 
         for (CommandConfig command : commands.values()) {
             if (command.isEnabled()) {
-                Bukkit.getScheduler().scheduleSyncRepeatingTask(this, () -> executeCommandForRegion(command), 0L, command.getInterval());
+                scheduler.runTimer(() -> executeCommandForRegion(command), 1L, command.getInterval());
             }
         }
     }
@@ -69,6 +76,10 @@ public class App extends JavaPlugin implements Listener {
     @Override
     public void onDisable() {
         getLogger().info("AfkPool Disabled");
+    }
+
+    public static PlatformScheduler scheduler() {
+        return scheduler;
     }
 
     public static String format(String str) {
@@ -208,6 +219,7 @@ public class App extends JavaPlugin implements Listener {
                     break;
                 }
             }
+
             if (isInRegion) {
                 if (!playersInRegions.get(commandConfig.getKey()).contains(player)) {
                     playersInRegions.get(commandConfig.getKey()).add(player);
@@ -217,9 +229,7 @@ public class App extends JavaPlugin implements Listener {
                 }
                 executeCommandForPlayer(player, commandConfig);
             } else {
-                if (playersInRegions.get(commandConfig.getKey()).contains(player)) {
-                    playersInRegions.get(commandConfig.getKey()).remove(player);
-                }
+                playersInRegions.get(commandConfig.getKey()).remove(player);
             }
         }
     }
@@ -228,11 +238,12 @@ public class App extends JavaPlugin implements Listener {
         if (commandConfig.isEnabled()) {
             int value = commandConfig.getMin() + (int) (Math.random() * ((commandConfig.getMax() - commandConfig.getMin()) + 1));
             if (player.hasPermission("afkpool.bonus")) {
-                value *= commandConfig.getMultiplier();
+                value *= (int) commandConfig.getMultiplier();
             }
             String command = commandConfig.getCommand().replace("%p", player.getName());
             command = command.replace("%m", String.valueOf(value));
-            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
+            String finalCommand = command;
+            scheduler.runNextTick(task -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), finalCommand));
 
             String formattedTitle = commandConfig.getTitle().replace("%m", String.valueOf(value));
             formattedTitle = format(formattedTitle);
