@@ -77,7 +77,7 @@
                             <pattern>org.bstats</pattern>
                             <shadedPattern>com.abdullaharafat.AfkPool</shadedPattern>
                             <pattern>com.tcoded.folialib</pattern>
-                            <shadedPattern>com.stanexe.playerreferrals.libs.folialib</shadedPattern>
+                            <shadedPattern>com.abdullaharafat.AfkPool.libs.folialib</shadedPattern>
                         </relocation>
                     </relocations>
                 </configuration>
