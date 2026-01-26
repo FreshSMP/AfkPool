@@ -3,7 +3,7 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.abdullaharafat.AfkPool</groupId>
-    <artifactId>afkpool</artifactId>
+    <artifactId>AfkPool</artifactId>
     <version>2.1.0</version>
 
     <properties>
@@ -19,6 +19,10 @@
         <repository>
             <id>sk89q-repo</id>
             <url>https://maven.enginehub.org/repo/</url>
+        </repository>
+        <repository>
+            <id>tcoded-releases</id>
+            <url>https://repo.tcoded.com/releases</url>
         </repository>
     </repositories>
 
@@ -36,9 +40,15 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
+            <groupId>com.tcoded</groupId>
+            <artifactId>FoliaLib</artifactId>
+            <version>0.5.1</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
             <groupId>org.bstats</groupId>
             <artifactId>bstats-bukkit</artifactId>
-            <version>3.0.2</version>
+            <version>3.1.0</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>
@@ -50,18 +60,24 @@
             <url>https://maven.pkg.github.com/kmaba/AfkPool</url>
         </repository>
     </distributionManagement>
-
     <build>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.1.0</version>
+                <version>3.6.1</version>
                 <configuration>
+                    <artifactSet>
+                        <includes>
+                            <include>com.tcoded:FoliaLib</include>
+                        </includes>
+                    </artifactSet>
                     <relocations>
                         <relocation>
                             <pattern>org.bstats</pattern>
                             <shadedPattern>com.abdullaharafat.AfkPool</shadedPattern>
+                            <pattern>com.tcoded.folialib</pattern>
+                            <shadedPattern>com.abdullaharafat.AfkPool.libs.folialib</shadedPattern>
                         </relocation>
                     </relocations>
                 </configuration>
@@ -82,5 +98,4 @@
             </resource>
         </resources>
     </build>
-
 </project>
